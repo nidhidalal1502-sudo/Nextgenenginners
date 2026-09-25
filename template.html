@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Distributed Object Store</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            color: white;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 28px;
+        }
+
+        .status {
+            background: #14532d;
+            padding: 10px 18px;
+            border-radius: 20px;
+            color: #86efac;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 22px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+        }
+
+        .card h3 {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #1e293b;
+            padding: 22px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            margin-bottom: 20px;
+        }
+
+        .node {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .alive {
+            color: #4ade80;
+        }
+
+        .down {
+            color: #f87171;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            background: #0f172a;
+            color: white;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .ring {
+            width: 280px;
+            height: 280px;
+            border: 3px solid #3b82f6;
+            border-radius: 50%;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .ring-node {
+            position: absolute;
+            background: #3b82f6;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .n1 {
+            top: -22px;
+            left: 115px;
+        }
+
+        .n2 {
+            right: -22px;
+            top: 115px;
+        }
+
+        .n3 {
+            bottom: -22px;
+            left: 115px;
+        }
+
+        .n4 {
+            left: -22px;
+            top: 115px;
+        }
+
+        .log {
+            background: #020617;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            color: #94a3b8;
+            min-height: 100px;
+        }
+
+        @media(max-width: 800px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width: 500px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Distributed Object Store</h1>
+        <div class="status">● SYSTEM HEALTHY</div>
+    </header>
+
+    <!-- Statistics -->
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>TOTAL NODES</h3>
+            <p id="nodeCount">4</p>
+        </div>
+
+        <div class="card">
+            <h3>OBJECTS</h3>
+            <p id="objectCount">0</p>
+        </div>
+
+        <div class="card">
+            <h3>REPLICATION</h3>
+            <p>N = 3</p>
+        </div>
+
+        <div class="card">
+            <h3>QUORUM</h3>
+            <p>W2 / R2</p>
+        </div>
+
+    </div>
+
+
+    <div class="grid">
+
+        <!-- Nodes -->
+
+        <div class="panel">
+
+            <h2>🖥 Cluster Nodes</h2>
+
+            <div class="node">
+                <span>Node 1<br>
+                    127.0.0.1:9001
+                </span>
+
+                <span class="alive">● ALIVE</span>
+            </div>
+
+            <div class="node">
+                <span>Node 2<br>
+                    127.0.0.1:9002
+                </span>
+
+                <span class="alive">● ALIVE</span>
+            </div>
+
+            <div class="node">
+                <span>Node 3<br>
+                    127.0.0.1:9003
+                </span>
+
+                <span class="alive">● ALIVE</span>
+            </div>
+
+            <div class="node">
+                <span>Node 4<br>
+                    127.0.0.1:9004
+                </span>
+
+                <span class="alive">● ALIVE</span>
+            </div>
+
+        </div>
+
+
+        <!-- Object Operations -->
+
+        <div class="panel">
+
+            <h2>📦 Object Operations</h2>
+
+            <input
+                type="text"
+                id="objectId"
+                placeholder="Enter Object ID"
+            >
+
+            <input
+                type="text"
+                id="objectData"
+                placeholder="Enter object data"
+            >
+
+            <button class="primary" onclick="uploadObject()">
+                Upload Object
+            </button>
+
+            <button class="success" onclick="readObject()">
+                Read Object
+            </button>
+
+            <button class="warning" onclick="repair()">
+                Run Repair
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- Hash Ring -->
+
+    <div class="panel">
+
+        <h2>🔗 Consistent Hashing Ring</h2>
+
+        <div class="ring">
+
+            <div class="ring-node n1">N1</div>
+
+            <div class="ring-node n2">N2</div>
+
+            <div class="ring-node n3">N3</div>
+
+            <div class="ring-node n4">N4</div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Activity -->
+
+    <div class="panel">
+
+        <h2>📋 Activity Log</h2>
+
+        <div class="log" id="log">
+            System started...<br>
+            Waiting for operations...
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function addLog(message) {
+
+    const log = document.getElementById("log");
+
+    const time = new Date().toLocaleTimeString();
+
+    log.innerHTML +=
+        `<br>[${time}] ${message}`;
+
+}
+
+
+async function uploadObject() {
+
+    const id =
+        document.getElementById("objectId").value;
+
+    const data =
+        document.getElementById("objectData").value;
+
+    if (!id || !data) {
+
+        alert("Enter Object ID and data");
+
+        return;
+    }
+
+    try {
+
+        const response = await fetch("/api/upload", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                object_id: id,
+                data: data
+            })
+
+        });
+
+        const result = await response.json();
+
+        addLog("Object uploaded: " + id);
+
+        console.log(result);
+
+    } catch (error) {
+
+        addLog("Upload failed");
+
+    }
+
+}
+
+
+async function readObject() {
+
+    const id =
+        document.getElementById("objectId").value;
+
+    if (!id) {
+
+        alert("Enter Object ID");
+
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch("/api/object/" + id);
+
+        const result =
+            await response.json();
+
+        addLog(
+            "Read object: " + id
+        );
+
+        alert(
+            JSON.stringify(result, null, 2)
+        );
+
+    } catch (error) {
+
+        addLog("Read failed");
+
+    }
+
+}
+
+
+async function repair() {
+
+    try {
+
+        const response =
+            await fetch("/api/repair", {
+                method: "POST"
+            });
+
+        const result =
+            await response.json();
+
+        addLog(
+            "Repair completed"
+        );
+
+        console.log(result);
+
+    } catch (error) {
+
+        addLog("Repair failed");
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
